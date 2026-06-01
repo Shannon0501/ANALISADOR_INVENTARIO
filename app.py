@@ -1,10 +1,3 @@
-O problema agora é que a coluna `Un. Neg.` no Excel não contém os nomes das filiais — ela contém apenas códigos numéricos, e no seu arquivo todos os registros aparecem como `"22"`.
-
-Então precisamos criar um mapeamento entre código e filial.
-
-Substitua TODO o código anterior por este abaixo, já corrigido:
-
-```python
 import os
 import pandas as pd
 import streamlit as st
@@ -329,4 +322,3 @@ if os.path.exists(HISTORICO_CSV):
         historico,
         use_container_width=True
     )
-```
