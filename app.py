@@ -40,8 +40,19 @@ def carregar_aba_principal(arquivo):
     df = pd.read_excel(
         arquivo,
         sheet_name=0,
+        header=1,
         engine="openpyxl"
     )
+
+    df = df.rename(columns={
+        "Un. Neg.": "Filiais",
+        "Embalagem": "Embalagem",
+        "Classificação 2° Nível": "classification",
+        "Est. Ap.": "Qtd Ap",
+        "Est. Te.": "Qtd Teórico",
+        "Dif": "Diferença",
+        "Custo Total": "Custo Total da diferença"
+    })
 
     colunas_necessarias = [
         "Filiais",
@@ -57,11 +68,13 @@ def carregar_aba_principal(arquivo):
 
     if faltantes:
         st.error(f"Colunas ausentes no arquivo: {faltantes}")
+        st.write("Colunas encontradas no arquivo:")
+        st.write(list(df.columns))
         st.stop()
 
     df = df[colunas_necessarias].copy()
 
-    df["Filiais"] = df["Filiais"].astype(str).str.strip()
+    df["Filiais"] = df["Filiais"].astype(str).str.strip().str.upper()
 
     for col in ["Qtd Ap", "Qtd Teórico", "Diferença", "Custo Total da diferença"]:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
@@ -126,10 +139,12 @@ if arquivo_excel is None:
 
 df = carregar_aba_principal(arquivo_excel)
 
-df_filtrado = df[df["Filiais"] == filial_selecionada].copy()
+df_filtrado = df[df["Filiais"] == filial_selecionada.upper()].copy()
 
 if df_filtrado.empty:
     st.warning("Nenhum dado encontrado para a filial selecionada.")
+    st.write("Filiais encontradas no arquivo:")
+    st.write(sorted(df["Filiais"].dropna().unique()))
     st.stop()
 
 valor_faltas = df_filtrado.loc[
@@ -165,14 +180,7 @@ fig = px.bar(
     df_grafico,
     x="classification",
     y="Custo Total da diferença",
-    text_auto=".2s",
-    title="Custo Total da Diferença por Classificação"
-)
-
-fig.update_layout(
-    xaxis_title="Classificação",
-    yaxis_title="Custo Total da Diferença",
-    xaxis_tickangle=-45
+    text_auto=".2s"
 )
 
 st.plotly_chart(fig, use_container_width=True)
