@@ -45,9 +45,7 @@ def carregar_aba_principal(arquivo):
     for col in ["Qtd Ap", "Qtd Teórico", "Diferença", "Custo Total da diferença"]:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
-    df["Filiais"] = pd.to_numeric(df["Filiais"], errors="coerce")
-    df = df.dropna(subset=["Filiais"])
-    df["Filiais"] = df["Filiais"].astype(int)
+    df["Filiais"] = df["Filiais"].astype(str).str.strip()
 
     return df
 
@@ -91,11 +89,42 @@ def salvar_historico(df_filtrado, filial, data_inventario):
 # Menu lateral
 # =========================
 
+# =========================
+# Lista de filiais
+# =========================
+
+lista_filiais = [
+    "ABAETETUBA 1",
+    "CAPANEMA 1",
+    "CASTANHAL 1",
+    "CAMETA",
+    "CAPITAO POCO",
+    "SANTA ISABEL",
+    "ABAETETUBA 2",
+    "CASTANHAL 2",
+    "BARCARENA 1",
+    "QUATRO BOCAS",
+    "CASTANHAL 3",
+    "ITAITUBA 1",
+    "ITAITUBA 2",
+    "CASTANHAL 4",
+    "CASTANHAL 5",
+    "MAE DO RIO",
+    "CAPANEMA 2",
+    "PORTEL",
+    "BENEVIDES"
+]
+
+# =========================
+# Menu lateral
+# =========================
+
 st.sidebar.header("Filtros")
 
 filial_selecionada = st.sidebar.selectbox(
     "Filial",
-    options=list(range(1, 21))
+    options=lista_filiais
+)
 )
 
 data_inventario = st.sidebar.date_input(
