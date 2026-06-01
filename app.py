@@ -228,7 +228,7 @@ with col_tab:
                 "Est. Te.": "{:,.0f}",
                 "Impacto R$": "R$ {:,.2f}",
             })
-            .applymap(lambda v: "color: #ff4b4b;" if isinstance(v, (int, float)) and v < 0 else "", subset=["Diferença"])
+            .map(lambda v: "color: #ff4b4b;" if isinstance(v, (int, float)) and v < 0 else "", subset=["Diferença"])
             .set_properties(**{"background-color": "#1e2130", "color": "white"}),
         use_container_width=True,
         height=430,
