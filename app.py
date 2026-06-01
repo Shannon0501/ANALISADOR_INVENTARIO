@@ -18,71 +18,23 @@ st.title("Análise de Inventário")
 # =========================
 
 def carregar_aba_principal(arquivo):
-    """
-    Lê a primeira aba do Excel e trata arquivos cujo cabeçalho real esteja na primeira linha.
-    """
-    df_raw = pd.read_excel(arquivo, sheet_name=0, header=None)
-
-    # Detecta linha de cabeçalho procurando "Embalagem"
-    header_row = None
-    for i in range(min(10, len(df_raw))):
-        valores = df_raw.iloc[i].astype(str).str.lower().tolist()
-        if any("embalagem" in v for v in valores):
-            header_row = i
-            break
-
-    if header_row is not None:
-        df = pd.read_excel(arquivo, sheet_name=0, header=header_row)
-    else:
-        df = pd.read_excel(arquivo, sheet_name=0)
-
-    df.columns = [str(c).strip() for c in df.columns]
-    return df
-
-
-def padronizar_colunas(df):
-    """
-    Padroniza nomes vindos do modelo anexado ou do layout informado.
-    """
-    mapa = {}
-
-    for col in df.columns:
-        c = col.strip().lower()
-
-        if c in ["filiais", "filial", "un. neg.", "un neg", "unidade"]:
-            mapa[col] = "Filiais"
-
-        elif c in ["embalagem", "produto", "sku"]:
-            mapa[col] = "Embalagem"
-
-        elif "classificação" in c or "classificacao" in c:
-            mapa[col] = "classificação"
-
-        elif c in ["qtd ap", "est. ap.", "estoque apurado"]:
-            mapa[col] = "Qtd Ap"
-
-        elif c in ["qtd teórico", "qtd teorico", "est. te.", "estoque teórico", "estoque teorico"]:
-            mapa[col] = "Qtd Teórico"
-
-        elif c in ["diferença", "diferenca", "dif"]:
-            mapa[col] = "Diferença"
-
-        elif "custo total" in c:
-            mapa[col] = "Custo Total da diferença"
-
-    df = df.rename(columns=mapa)
+    df = pd.read_excel(
+        arquivo,
+        sheet_name=0,
+        engine="openpyxl"
+    )
 
     colunas_necessarias = [
         "Filiais",
         "Embalagem",
-        "classificação",
+        "classification",
         "Qtd Ap",
         "Qtd Teórico",
         "Diferença",
         "Custo Total da diferença"
     ]
 
-    faltantes = [c for c in colunas_necessarias if c not in df.columns]
+    faltantes = [col for col in colunas_necessarias if col not in df.columns]
 
     if faltantes:
         st.error(f"Colunas ausentes no arquivo: {faltantes}")
@@ -152,7 +104,7 @@ data_inventario = st.sidebar.date_input(
 
 arquivo_excel = st.sidebar.file_uploader(
     "Upload do arquivo Excel",
-    type=["xlsx", "xls"]
+    type=["xlsx"]
 )
 
 # =========================
@@ -164,7 +116,6 @@ if arquivo_excel is None:
     st.stop()
 
 df = carregar_aba_principal(arquivo_excel)
-df = padronizar_colunas(df)
 
 df_filtrado = df[df["Filiais"] == filial_selecionada].copy()
 
@@ -208,21 +159,21 @@ col3.metric(
 st.divider()
 
 # =========================
-# Gráfico por classificação
+# Gráfico por classification
 # =========================
 
 st.subheader("Custo Total da Diferença por Classificação")
 
 df_grafico = (
     df_filtrado
-    .groupby("classificação", as_index=False)["Custo Total da diferença"]
+    .groupby("classification", as_index=False)["Custo Total da diferença"]
     .sum()
     .sort_values("Custo Total da diferença")
 )
 
 fig = px.bar(
     df_grafico,
-    x="classificação",
+    x="classification",
     y="Custo Total da diferença",
     text_auto=".2s",
     title="Custo Total da Diferença por Classificação"
